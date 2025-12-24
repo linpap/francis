@@ -154,10 +154,10 @@ class EmailAlertSystem:
             print(f"Failed to send email alert: {e}")
             return False
 
-    def send_test_email(self) -> bool:
-        """Send a test email to verify configuration"""
+    def send_test_email(self):
+        """Send a test email to verify configuration. Returns (success, error_message)"""
         if not self.enabled:
-            return False
+            return False, "Email not configured"
 
         try:
             subject = "Francis Trading App - Test Email"
@@ -182,10 +182,11 @@ class EmailAlertSystem:
                 server.login(self.sender_email, self.sender_password)
                 server.send_message(message)
 
-            return True
+            return True, None
         except Exception as e:
-            print(f"Test email failed: {e}")
-            return False
+            error_msg = str(e)
+            print(f"Test email failed: {error_msg}")
+            return False, error_msg
 
 
 # For testing

@@ -65,10 +65,10 @@ def test_email():
     if not email_system.is_configured():
         return jsonify({
             "success": False,
-            "message": "Email not configured. Please set EMAIL_SENDER, EMAIL_PASSWORD, and EMAIL_RECEIVER in .env file."
+            "message": "Email not configured. Please set EMAIL_SENDER, EMAIL_PASSWORD, and EMAIL_RECEIVER in environment variables."
         })
 
-    success = email_system.send_test_email()
+    success, error = email_system.send_test_email()
     if success:
         return jsonify({
             "success": True,
@@ -77,7 +77,7 @@ def test_email():
     else:
         return jsonify({
             "success": False,
-            "message": "Failed to send test email. Check your email configuration."
+            "message": f"Failed to send test email: {error}"
         })
 
 
