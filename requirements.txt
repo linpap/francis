@@ -1,0 +1,8 @@
+flask==3.0.0
+requests==2.31.0
+pandas==2.1.4
+schedule==1.2.1
+python-dotenv==1.0.0
+apscheduler==3.10.4
+yfinance==0.2.40
+gunicorn==21.2.0

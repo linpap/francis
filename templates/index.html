@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Francis - BankNifty Signal Scanner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        header p {
+            color: #888;
+            margin-top: 10px;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.05);
+            padding: 15px 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .scanner-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.active {
+            background: #00ff88;
+        }
+
+        .status-dot.inactive {
+            background: #ff4444;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        .last-scan {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .card h2 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: #00d4ff;
+        }
+
+        .price-display {
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        .current-price {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .price-change {
+            font-size: 1.2rem;
+            margin-top: 10px;
+        }
+
+        .price-change.positive { color: #00ff88; }
+        .price-change.negative { color: #ff4444; }
+
+        .levels-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .level-box {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .level-box.high {
+            border-left: 4px solid #00ff88;
+        }
+
+        .level-box.low {
+            border-left: 4px solid #ff4444;
+        }
+
+        .level-label {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .level-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .signal-box {
+            text-align: center;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .signal-box.buy {
+            background: linear-gradient(135deg, rgba(0,255,136,0.2), rgba(0,255,136,0.05));
+            border: 2px solid #00ff88;
+        }
+
+        .signal-box.sell {
+            background: linear-gradient(135deg, rgba(255,68,68,0.2), rgba(255,68,68,0.05));
+            border: 2px solid #ff4444;
+        }
+
+        .signal-box.neutral {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid #666;
+        }
+
+        .signal-type {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .signal-box.buy .signal-type { color: #00ff88; }
+        .signal-box.sell .signal-type { color: #ff4444; }
+        .signal-box.neutral .signal-type { color: #888; }
+
+        .signals-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .signal-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .signal-item.buy {
+            border-left: 4px solid #00ff88;
+        }
+
+        .signal-item.sell {
+            border-left: 4px solid #ff4444;
+        }
+
+        .signal-info h3 {
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+
+        .signal-info p {
+            color: #888;
+            font-size: 0.85rem;
+        }
+
+        .signal-price {
+            text-align: right;
+        }
+
+        .signal-price .price {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .signal-price .time {
+            color: #888;
+            font-size: 0.8rem;
+        }
+
+        .btn {
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,212,255,0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .config-section {
+            margin-top: 20px;
+        }
+
+        .config-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .config-label {
+            color: #888;
+        }
+
+        .config-value {
+            font-weight: bold;
+        }
+
+        .config-value.success { color: #00ff88; }
+        .config-value.error { color: #ff4444; }
+
+        .no-signals {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+
+        .form-group input::placeholder {
+            color: #666;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            .status-bar {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .current-price {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Francis Trading Scanner</h1>
+            <p>BankNifty Previous Day High/Low Breakout Strategy</p>
+        </header>
+
+        <div class="status-bar">
+            <div class="scanner-status">
+                <div class="status-dot" id="scannerDot"></div>
+                <span id="scannerStatus">Initializing...</span>
+            </div>
+            <div class="last-scan">
+                Last scan: <span id="lastScanTime">--</span>
+            </div>
+            <div class="actions">
+                <button class="btn" onclick="manualScan()">Scan Now</button>
+                <button class="btn" onclick="testEmail()" id="testEmailBtn">Test Email</button>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h2>Current Price</h2>
+                <div class="price-display">
+                    <div class="current-price" id="currentPrice">--</div>
+                    <div class="price-change" id="priceChange">--</div>
+                </div>
+                <div class="levels-grid">
+                    <div class="level-box high">
+                        <div class="level-label">Previous High</div>
+                        <div class="level-value" id="prevHigh">--</div>
+                    </div>
+                    <div class="level-box low">
+                        <div class="level-label">Previous Low</div>
+                        <div class="level-value" id="prevLow">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Active Signal</h2>
+                <div class="signal-box neutral" id="activeSignalBox">
+                    <div class="signal-type" id="activeSignalType">WAITING</div>
+                    <p id="activeSignalDesc">Waiting for breakout...</p>
+                </div>
+                <div class="config-section">
+                    <div class="config-item">
+                        <span class="config-label">Scan Interval</span>
+                        <span class="config-value">15 minutes</span>
+                    </div>
+                    <div class="config-item">
+                        <span class="config-label">Email Alerts</span>
+                        <span class="config-value" id="emailStatus">Checking...</span>
+                    </div>
+                    <div class="config-item">
+                        <span class="config-label">Distance to High</span>
+                        <span class="config-value" id="distHigh">--</span>
+                    </div>
+                    <div class="config-item">
+                        <span class="config-label">Distance to Low</span>
+                        <span class="config-value" id="distLow">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h2>Manual Data Entry</h2>
+                <p style="color: #888; font-size: 0.9rem; margin-bottom: 15px;">
+                    Set previous day levels and current price manually (useful when API is unavailable)
+                </p>
+                <div class="form-group">
+                    <label>Previous Day High</label>
+                    <input type="number" id="inputPrevHigh" placeholder="e.g., 52000" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Previous Day Low</label>
+                    <input type="number" id="inputPrevLow" placeholder="e.g., 51500" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Previous Day Close</label>
+                    <input type="number" id="inputPrevClose" placeholder="e.g., 51800" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Current Price</label>
+                    <input type="number" id="inputCurrentPrice" placeholder="e.g., 51750" step="0.01">
+                </div>
+                <div class="actions" style="margin-top: 15px;">
+                    <button class="btn" onclick="setManualData()">Set All Data</button>
+                    <button class="btn" onclick="updatePriceOnly()" style="background: #4a4a6a;">Update Price</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Signal History</h2>
+                <div class="signals-list" id="signalsList">
+                    <div class="no-signals">No signals yet. Waiting for breakouts...</div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            Francis Trading App - BankNifty Scanner | Auto-refreshes every 30 seconds
+        </footer>
+    </div>
+
+    <script>
+        // Update dashboard every 30 seconds
+        function updateDashboard() {
+            fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    // Update scanner status
+                    const scannerDot = document.getElementById('scannerDot');
+                    const scannerStatus = document.getElementById('scannerStatus');
+
+                    if (data.scanner_running) {
+                        scannerDot.classList.add('active');
+                        scannerDot.classList.remove('inactive');
+                        scannerStatus.textContent = 'Scanner Active';
+                    } else {
+                        scannerDot.classList.add('inactive');
+                        scannerDot.classList.remove('active');
+                        scannerStatus.textContent = 'Scanner Inactive';
+                    }
+
+                    // Update last scan time
+                    document.getElementById('lastScanTime').textContent = data.last_scan || '--';
+
+                    // Update current price
+                    if (data.current_price) {
+                        document.getElementById('currentPrice').textContent =
+                            data.current_price.price?.toLocaleString('en-IN', {minimumFractionDigits: 2}) || '--';
+
+                        const changeEl = document.getElementById('priceChange');
+                        const change = data.current_price.change || 0;
+                        changeEl.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
+                        changeEl.className = 'price-change ' + (change >= 0 ? 'positive' : 'negative');
+                    }
+
+                    // Update market status
+                    if (data.market_status) {
+                        const ms = data.market_status;
+                        document.getElementById('prevHigh').textContent =
+                            ms.previous_high?.toLocaleString('en-IN', {minimumFractionDigits: 2}) || '--';
+                        document.getElementById('prevLow').textContent =
+                            ms.previous_low?.toLocaleString('en-IN', {minimumFractionDigits: 2}) || '--';
+
+                        // Distance indicators
+                        document.getElementById('distHigh').textContent =
+                            ms.distance_to_high?.toFixed(2) || '--';
+                        document.getElementById('distLow').textContent =
+                            ms.distance_to_low?.toFixed(2) || '--';
+
+                        // Active signal
+                        const signalBox = document.getElementById('activeSignalBox');
+                        const signalType = document.getElementById('activeSignalType');
+                        const signalDesc = document.getElementById('activeSignalDesc');
+
+                        signalBox.className = 'signal-box';
+                        if (ms.signal_active === 'BUY') {
+                            signalBox.classList.add('buy');
+                            signalType.textContent = 'BUY SIGNAL';
+                            signalDesc.textContent = 'Price above previous day high - Bullish breakout!';
+                        } else if (ms.signal_active === 'SELL') {
+                            signalBox.classList.add('sell');
+                            signalType.textContent = 'SELL SIGNAL';
+                            signalDesc.textContent = 'Price below previous day low - Bearish breakdown!';
+                        } else {
+                            signalBox.classList.add('neutral');
+                            signalType.textContent = 'NEUTRAL';
+                            signalDesc.textContent = 'Price within previous day range. Waiting for breakout...';
+                        }
+                    }
+
+                    // Email status
+                    document.getElementById('emailStatus').textContent =
+                        data.email_configured ? 'Configured' : 'Not Configured';
+                    document.getElementById('emailStatus').className =
+                        'config-value ' + (data.email_configured ? 'success' : 'error');
+
+                    // Signals history
+                    updateSignalsHistory(data.signals_history || []);
+                })
+                .catch(error => {
+                    console.error('Error fetching status:', error);
+                    document.getElementById('scannerStatus').textContent = 'Connection Error';
+                });
+        }
+
+        function updateSignalsHistory(signals) {
+            const container = document.getElementById('signalsList');
+
+            if (signals.length === 0) {
+                container.innerHTML = '<div class="no-signals">No signals yet. Waiting for breakouts...</div>';
+                return;
+            }
+
+            container.innerHTML = signals.reverse().map(signal => `
+                <div class="signal-item ${signal.signal_type.toLowerCase()}">
+                    <div class="signal-info">
+                        <h3>${signal.signal_type} Signal</h3>
+                        <p>Trigger: ${signal.trigger_level?.toLocaleString('en-IN', {minimumFractionDigits: 2})}</p>
+                    </div>
+                    <div class="signal-price">
+                        <div class="price">${signal.price?.toLocaleString('en-IN', {minimumFractionDigits: 2})}</div>
+                        <div class="time">${new Date(signal.timestamp).toLocaleString()}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function manualScan() {
+            fetch('/api/scan', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message || 'Scan completed');
+                    updateDashboard();
+                })
+                .catch(error => {
+                    alert('Scan failed: ' + error);
+                });
+        }
+
+        function testEmail() {
+            const btn = document.getElementById('testEmailBtn');
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+
+            fetch('/api/test-email', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    btn.disabled = false;
+                    btn.textContent = 'Test Email';
+                })
+                .catch(error => {
+                    alert('Failed to send test email');
+                    btn.disabled = false;
+                    btn.textContent = 'Test Email';
+                });
+        }
+
+        function setManualData() {
+            const prevHigh = document.getElementById('inputPrevHigh').value;
+            const prevLow = document.getElementById('inputPrevLow').value;
+            const prevClose = document.getElementById('inputPrevClose').value;
+            const currentPrice = document.getElementById('inputCurrentPrice').value;
+
+            if (!prevHigh || !prevLow) {
+                alert('Please enter at least Previous High and Low values');
+                return;
+            }
+
+            fetch('/api/set-data', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    previous_high: prevHigh,
+                    previous_low: prevLow,
+                    previous_close: prevClose || prevHigh,
+                    current_price: currentPrice || null
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                updateDashboard();
+            })
+            .catch(error => {
+                alert('Failed to set data: ' + error);
+            });
+        }
+
+        function updatePriceOnly() {
+            const price = document.getElementById('inputCurrentPrice').value;
+
+            if (!price) {
+                alert('Please enter a current price');
+                return;
+            }
+
+            fetch('/api/update-price', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ price: price })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.signal) {
+                    alert(`${data.message}\n\nSIGNAL: ${data.signal.signal_type} at ${data.signal.price}`);
+                } else {
+                    alert(data.message);
+                }
+                updateDashboard();
+            })
+            .catch(error => {
+                alert('Failed to update price: ' + error);
+            });
+        }
+
+        // Initial load
+        updateDashboard();
+
+        // Refresh every 30 seconds
+        setInterval(updateDashboard, 30000);
+    </script>
+</body>
+</html>
