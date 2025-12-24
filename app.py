@@ -20,6 +20,10 @@ app = Flask(__name__)
 SCAN_INTERVAL = int(os.getenv("SCAN_INTERVAL_MINUTES", "15"))
 scanner = BankNiftyScanner(scan_interval_minutes=SCAN_INTERVAL)
 
+# Start scanner immediately on module load (for gunicorn/production)
+scanner.start()
+print("Scanner started on module load")
+
 
 @app.route("/")
 def index():
@@ -206,9 +210,6 @@ if __name__ == "__main__":
     ║            SELL when price < previous day low             ║
     ╚═══════════════════════════════════════════════════════════╝
     """)
-
-    # Start the scanner
-    start_scanner()
 
     # Get port from environment (for cloud deployment) or use 5001
     port = int(os.getenv("PORT", 5001))
