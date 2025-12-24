@@ -373,7 +373,7 @@
     <div class="container">
         <header>
             <h1>Francis Trading Scanner</h1>
-            <p>BankNifty Previous Day High/Low Breakout Strategy</p>
+            <p>BankNifty Recent Swing High/Low Breakout Strategy</p>
         </header>
 
         <div class="status-bar">
@@ -399,11 +399,11 @@
                 </div>
                 <div class="levels-grid">
                     <div class="level-box high">
-                        <div class="level-label">Previous High</div>
+                        <div class="level-label">Swing High <span id="swingHighDate" style="font-size:0.8em;opacity:0.7"></span></div>
                         <div class="level-value" id="prevHigh">--</div>
                     </div>
                     <div class="level-box low">
-                        <div class="level-label">Previous Low</div>
+                        <div class="level-label">Swing Low <span id="swingLowDate" style="font-size:0.8em;opacity:0.7"></span></div>
                         <div class="level-value" id="prevLow">--</div>
                     </div>
                 </div>
@@ -518,6 +518,14 @@
                             ms.previous_high?.toLocaleString('en-IN', {minimumFractionDigits: 2}) || '--';
                         document.getElementById('prevLow').textContent =
                             ms.previous_low?.toLocaleString('en-IN', {minimumFractionDigits: 2}) || '--';
+
+                        // Show swing dates
+                        if (ms.swing_high_date) {
+                            document.getElementById('swingHighDate').textContent = `(${ms.swing_high_date})`;
+                        }
+                        if (ms.swing_low_date) {
+                            document.getElementById('swingLowDate').textContent = `(${ms.swing_low_date})`;
+                        }
 
                         // Distance indicators
                         document.getElementById('distHigh').textContent =
