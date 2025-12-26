@@ -13,16 +13,13 @@ import json
 import time
 import random
 
-# NSE India stocks list (top stocks for scanning)
+# NSE India stocks list (top 30 stocks for faster scanning on free tier)
 NSE_STOCKS = [
     "RELIANCE", "TCS", "HDFCBANK", "INFY", "ICICIBANK", "HINDUNILVR", "SBIN",
     "BHARTIARTL", "KOTAKBANK", "ITC", "LT", "AXISBANK", "ASIANPAINT", "MARUTI",
-    "BAJFINANCE", "TITAN", "SUNPHARMA", "ULTRACEMCO", "NESTLEIND", "WIPRO",
-    "HCLTECH", "POWERGRID", "NTPC", "TATASTEEL", "ONGC", "JSWSTEEL", "TECHM",
-    "HINDALCO", "ADANIENT", "ADANIPORTS", "BAJAJFINSV", "COALINDIA", "DRREDDY",
-    "DIVISLAB", "GRASIM", "CIPLA", "BRITANNIA", "EICHERMOT", "APOLLOHOSP",
-    "BPCL", "INDUSINDBK", "TATAMOTORS", "HEROMOTOCO", "TATACONSUM", "SBILIFE",
-    "HDFCLIFE", "UPL", "SHREECEM", "BAJAJ-AUTO", "M&M"
+    "BAJFINANCE", "TITAN", "SUNPHARMA", "WIPRO", "HCLTECH", "POWERGRID",
+    "NTPC", "TATASTEEL", "TECHM", "HINDALCO", "COALINDIA", "TATAMOTORS",
+    "CIPLA", "BRITANNIA", "GRASIM", "JSWSTEEL"
 ]
 
 
@@ -92,8 +89,8 @@ def get_stock_data_yahoo(symbol, period="6mo"):
     warnings.filterwarnings('ignore')
 
     try:
-        # Add small random delay to avoid rate limiting
-        time.sleep(random.uniform(0.1, 0.3))
+        # Add small random delay to avoid rate limiting (reduced for faster scanning)
+        time.sleep(random.uniform(0.05, 0.15))
 
         # Get daily data
         daily_data = get_yahoo_chart_data(symbol, "1d", period)
@@ -210,8 +207,8 @@ def scan_stocks(conditions, stock_list=None, segment="cash"):
 
     results = []
 
-    # Fetch data in parallel
-    with ThreadPoolExecutor(max_workers=10) as executor:
+    # Fetch data in parallel (increased workers for faster scanning)
+    with ThreadPoolExecutor(max_workers=15) as executor:
         future_to_symbol = {executor.submit(get_stock_data, symbol): symbol for symbol in stock_list}
 
         for future in as_completed(future_to_symbol):
