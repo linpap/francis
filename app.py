@@ -12,6 +12,7 @@ load_dotenv()
 
 from src.scanner import BankNiftyScanner
 from src.email_alert import EmailAlertSystem
+from src.value_scanner import scan_stocks, NSE_STOCKS
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -29,6 +30,12 @@ print("Scanner started on module load")
 def index():
     """Main dashboard page"""
     return render_template("index.html")
+
+
+@app.route("/value-buy")
+def value_buy():
+    """Value Buying stock scanner dashboard"""
+    return render_template("value_buy.html")
 
 
 @app.route("/api/status")
@@ -186,6 +193,47 @@ def update_price():
         "success": True,
         "message": f"Price updated to {price:,.2f}",
         "signal": signal_data
+    })
+
+
+@app.route("/api/value-scan", methods=["POST"])
+def value_scan():
+    """Scan stocks based on conditions for Value Buy scanner"""
+    data = request.get_json()
+    conditions = data.get("conditions", [])
+    segment = data.get("segment", "cash")
+
+    # Filter only active conditions
+    active_conditions = [c for c in conditions if c.get("active", True)]
+
+    if not active_conditions:
+        return jsonify({
+            "success": False,
+            "message": "No active conditions provided",
+            "results": []
+        })
+
+    try:
+        results = scan_stocks(active_conditions, NSE_STOCKS, segment)
+        return jsonify({
+            "success": True,
+            "message": f"Found {len(results)} stocks matching criteria",
+            "results": results
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": f"Scan error: {str(e)}",
+            "results": []
+        })
+
+
+@app.route("/api/stock-list")
+def get_stock_list():
+    """Get list of available stocks for scanning"""
+    return jsonify({
+        "stocks": NSE_STOCKS,
+        "count": len(NSE_STOCKS)
     })
 
 

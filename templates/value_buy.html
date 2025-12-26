@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Value Buying - Stock Scanner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+            min-height: 100vh;
+            color: #c9d1d9;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            padding: 20px 0;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            color: #fff;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        /* Magic Filters Section */
+        .magic-filters {
+            background: rgba(30, 40, 55, 0.8);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .magic-filters-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .magic-filters-header span {
+            color: #f97316;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .magic-icon {
+            color: #f97316;
+        }
+
+        .filter-input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .toggle-buttons {
+            display: flex;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .toggle-btn {
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            color: #8b949e;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .toggle-btn.active {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        .magic-input {
+            flex: 1;
+            padding: 12px 16px;
+            background: rgba(13, 17, 23, 0.8);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #8b949e;
+            font-size: 0.95rem;
+        }
+
+        .magic-input:focus {
+            outline: none;
+            border-color: #58a6ff;
+        }
+
+        .generate-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #0066ff, #0044cc);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .generate-btn:hover {
+            background: linear-gradient(135deg, #0077ff, #0055dd);
+            transform: translateY(-1px);
+        }
+
+        /* Quick Filter Tags */
+        .quick-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .quick-tag {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: rgba(30, 40, 55, 0.9);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 6px;
+            color: #c9d1d9;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-tag:hover {
+            border-color: #58a6ff;
+            background: rgba(88, 166, 255, 0.1);
+        }
+
+        .quick-tag .refresh-icon {
+            color: #58a6ff;
+            font-size: 0.8rem;
+        }
+
+        .add-tag {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: transparent;
+            border: 1px dashed rgba(255,255,255,0.2);
+            border-radius: 6px;
+            color: #8b949e;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .add-tag:hover {
+            border-color: #58a6ff;
+            color: #58a6ff;
+        }
+
+        /* Conditions Section */
+        .conditions-section {
+            margin-bottom: 25px;
+        }
+
+        .conditions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .conditions-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #c9d1d9;
+            font-size: 0.95rem;
+        }
+
+        .conditions-title select {
+            background: rgba(30, 40, 55, 0.8);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 6px;
+            padding: 6px 12px;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        .conditions-title .icons {
+            display: flex;
+            gap: 8px;
+            color: #8b949e;
+        }
+
+        .conditions-title .icon-btn {
+            background: none;
+            border: none;
+            color: #8b949e;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .conditions-title .icon-btn:hover {
+            color: #58a6ff;
+        }
+
+        .hide-conditions-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: rgba(30, 40, 55, 0.8);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 6px;
+            color: #c9d1d9;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .hide-conditions-btn:hover {
+            border-color: #58a6ff;
+        }
+
+        /* Condition Items */
+        .conditions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .condition-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: rgba(13, 17, 23, 0.6);
+            border-radius: 8px;
+            border-left: 3px solid transparent;
+        }
+
+        .condition-item.weekly {
+            border-left-color: #f97316;
+        }
+
+        .condition-item.daily {
+            border-left-color: #22c55e;
+        }
+
+        .condition-item.monthly {
+            border-left-color: #8b5cf6;
+        }
+
+        .timeframe {
+            font-weight: 500;
+            min-width: 70px;
+        }
+
+        .timeframe.monthly { color: #8b5cf6; }
+        .timeframe.weekly { color: #f97316; }
+        .timeframe.daily { color: #22c55e; }
+
+        .indicator {
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .indicator-params {
+            color: #8b949e;
+        }
+
+        .operator {
+            color: #22c55e;
+            font-weight: 500;
+        }
+
+        .value-type {
+            color: #c9d1d9;
+        }
+
+        .value-input {
+            width: 60px;
+            padding: 6px 10px;
+            background: rgba(30, 40, 55, 0.8);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 4px;
+            color: #fff;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .condition-actions {
+            display: flex;
+            gap: 6px;
+            margin-left: auto;
+        }
+
+        .condition-action-btn {
+            background: none;
+            border: none;
+            color: #8b949e;
+            cursor: pointer;
+            padding: 4px 6px;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+
+        .condition-action-btn:hover {
+            color: #58a6ff;
+        }
+
+        .condition-action-btn.delete:hover {
+            color: #f85149;
+        }
+
+        .condition-action-btn.active {
+            color: #22c55e;
+        }
+
+        /* Add Condition Buttons */
+        .add-condition-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .add-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #22c55e;
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .add-btn:hover {
+            background: #16a34a;
+            transform: scale(1.05);
+        }
+
+        .add-group-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(30, 40, 55, 0.8);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 6px;
+            color: #8b949e;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .add-group-btn:hover {
+            border-color: #58a6ff;
+            color: #58a6ff;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            padding: 20px 0;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 20px;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .btn-run {
+            background: transparent;
+            border-color: #22c55e;
+            color: #22c55e;
+        }
+
+        .btn-run:hover {
+            background: rgba(34, 197, 94, 0.1);
+        }
+
+        .btn-save {
+            background: transparent;
+            border-color: #58a6ff;
+            color: #58a6ff;
+        }
+
+        .btn-save:hover {
+            background: rgba(88, 166, 255, 0.1);
+        }
+
+        .btn-backtest {
+            background: transparent;
+            border-color: #f97316;
+            color: #f97316;
+        }
+
+        .btn-backtest:hover {
+            background: rgba(249, 115, 22, 0.1);
+        }
+
+        .btn-alert {
+            background: transparent;
+            border-color: #ec4899;
+            color: #ec4899;
+        }
+
+        .btn-alert:hover {
+            background: rgba(236, 72, 153, 0.1);
+        }
+
+        .btn-more {
+            background: transparent;
+            border-color: rgba(255,255,255,0.2);
+            color: #8b949e;
+        }
+
+        .btn-more:hover {
+            border-color: #58a6ff;
+            color: #58a6ff;
+        }
+
+        .love-counter {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #8b949e;
+            font-size: 0.9rem;
+            margin-left: auto;
+        }
+
+        .love-counter .heart {
+            color: #f85149;
+        }
+
+        /* Premium Banner */
+        .premium-banner {
+            background: rgba(249, 115, 22, 0.1);
+            border: 1px solid rgba(249, 115, 22, 0.3);
+            border-radius: 8px;
+            padding: 12px 20px;
+            margin-top: 20px;
+            color: #f97316;
+            font-size: 0.9rem;
+        }
+
+        .premium-banner strong {
+            color: #fff;
+        }
+
+        /* Results Section */
+        .results-section {
+            background: rgba(30, 40, 55, 0.8);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+            display: none;
+        }
+
+        .results-section.visible {
+            display: block;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .results-header h3 {
+            color: #fff;
+            font-size: 1.1rem;
+        }
+
+        .results-count {
+            color: #22c55e;
+            font-size: 0.9rem;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .results-table th,
+        .results-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .results-table th {
+            color: #8b949e;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
+        .results-table td {
+            color: #c9d1d9;
+        }
+
+        .stock-symbol {
+            color: #58a6ff;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .stock-symbol:hover {
+            color: #79c0ff;
+            text-decoration: underline;
+        }
+
+        .positive { color: #22c55e; }
+        .negative { color: #f85149; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .filter-input-row {
+                flex-direction: column;
+            }
+
+            .magic-input {
+                width: 100%;
+            }
+
+            .quick-tags {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                padding-bottom: 10px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .love-counter {
+                margin-left: 0;
+                justify-content: center;
+            }
+        }
+
+        /* Modal for adding conditions */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.visible {
+            display: flex;
+        }
+
+        .modal {
+            background: #1e2836;
+            border-radius: 12px;
+            padding: 25px;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .modal h3 {
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        .modal-form-group {
+            margin-bottom: 15px;
+        }
+
+        .modal-form-group label {
+            display: block;
+            color: #8b949e;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+
+        .modal-form-group select,
+        .modal-form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(13, 17, 23, 0.8);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border: none;
+        }
+
+        .modal-btn.primary {
+            background: #22c55e;
+            color: #fff;
+        }
+
+        .modal-btn.secondary {
+            background: rgba(255,255,255,0.1);
+            color: #c9d1d9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>VALUE BUYING</h1>
+        </header>
+
+        <!-- Magic Filters Section -->
+        <div class="magic-filters">
+            <div class="magic-filters-header">
+                <span class="magic-icon">&#10024;</span>
+                <span>MAGIC FILTERS</span>
+            </div>
+
+            <div class="filter-input-row">
+                <div class="toggle-buttons">
+                    <button class="toggle-btn active" data-mode="append">Append</button>
+                    <button class="toggle-btn" data-mode="replace">Replace</button>
+                </div>
+                <input type="text" class="magic-input" id="magicInput" placeholder="Scan stocks using simple language like 'stocks up by 4% and rising volume'">
+                <button class="generate-btn" onclick="generateFilters()">
+                    <span>&#10024;</span> Generate
+                </button>
+            </div>
+
+            <div class="quick-tags">
+                <div class="quick-tag" onclick="applyQuickTag('supertrend and macd positive')">
+                    supertrend and macd positive <span class="refresh-icon">&#8635;</span>
+                </div>
+                <div class="quick-tag" onclick="applyQuickTag('Three black soldiers')">
+                    Three black soldiers <span class="refresh-icon">&#8635;</span>
+                </div>
+                <div class="quick-tag" onclick="applyQuickTag('SMA50 in uptrend since last 20 days')">
+                    SMA50 in uptrend since last 20 days <span class="refresh-icon">&#8635;</span>
+                </div>
+                <div class="quick-tag" onclick="applyQuickTag('latest close between 100 and 2000')">
+                    latest close between 100 and 2000 <span class="refresh-icon">&#8635;</span>
+                </div>
+            </div>
+
+            <div class="add-tag" onclick="addNewTag()">
+                Add tag +
+            </div>
+        </div>
+
+        <!-- Conditions Section -->
+        <div class="conditions-section">
+            <div class="conditions-header">
+                <div class="conditions-title">
+                    <span>Stock passes <strong>all</strong> of the below filters in</span>
+                    <select id="segmentSelect">
+                        <option value="cash">cash</option>
+                        <option value="fno">F&O</option>
+                        <option value="all">all</option>
+                    </select>
+                    <span>segment:</span>
+                    <div class="icons">
+                        <button class="icon-btn" title="Copy">&#128203;</button>
+                        <button class="icon-btn" title="Duplicate">&#128203;</button>
+                    </div>
+                </div>
+                <button class="hide-conditions-btn" onclick="toggleConditions()">
+                    <span>&#128065;</span> Hide conditions
+                </button>
+            </div>
+
+            <div class="conditions-list" id="conditionsList">
+                <!-- Conditions will be rendered here -->
+            </div>
+
+            <div class="add-condition-row">
+                <button class="add-btn" onclick="openAddConditionModal()">+</button>
+                <button class="add-group-btn" title="Add condition group">&#128194;</button>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="btn btn-run" onclick="runScan()">
+                <span>&#9658;</span> Run Scan
+            </button>
+            <button class="btn btn-save" onclick="saveScan()">
+                <span>&#128190;</span> Save Scan
+            </button>
+            <button class="btn btn-backtest" onclick="backtestResults()">
+                <span>&#128337;</span> Backtest Results
+            </button>
+            <button class="btn btn-alert" onclick="createAlert()">
+                <span>&#128276;</span> Create Alert
+            </button>
+            <button class="btn btn-more">
+                More <span>&#128203;</span> <span>&#128172;</span>
+            </button>
+            <div class="love-counter">
+                <span class="heart">&#9825;</span> 0 people love this
+            </div>
+        </div>
+
+        <!-- Premium Banner -->
+        <div class="premium-banner">
+            Get <strong>Realtime data</strong> for scanner in our premium subscription
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section" id="resultsSection">
+            <div class="results-header">
+                <h3>Scan Results</h3>
+                <span class="results-count" id="resultsCount">0 stocks found</span>
+            </div>
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>LTP</th>
+                        <th>Change %</th>
+                        <th>Volume</th>
+                        <th>Monthly RSI</th>
+                        <th>Weekly RSI</th>
+                        <th>Daily RSI</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add Condition Modal -->
+    <div class="modal-overlay" id="addConditionModal">
+        <div class="modal">
+            <h3>Add Condition</h3>
+            <div class="modal-form-group">
+                <label>Timeframe</label>
+                <select id="modalTimeframe">
+                    <option value="Daily">Daily</option>
+                    <option value="Weekly">Weekly</option>
+                    <option value="Monthly">Monthly</option>
+                </select>
+            </div>
+            <div class="modal-form-group">
+                <label>Indicator</label>
+                <select id="modalIndicator">
+                    <option value="Rsi">RSI</option>
+                    <option value="MACD">MACD</option>
+                    <option value="SMA">SMA</option>
+                    <option value="EMA">EMA</option>
+                    <option value="Supertrend">Supertrend</option>
+                    <option value="Volume">Volume</option>
+                    <option value="Close">Close Price</option>
+                </select>
+            </div>
+            <div class="modal-form-group">
+                <label>Period</label>
+                <input type="number" id="modalPeriod" value="14">
+            </div>
+            <div class="modal-form-group">
+                <label>Operator</label>
+                <select id="modalOperator">
+                    <option value="Greater than equal to">Greater than or equal to</option>
+                    <option value="Less than equal to">Less than or equal to</option>
+                    <option value="Greater than">Greater than</option>
+                    <option value="Less than">Less than</option>
+                    <option value="Equal to">Equal to</option>
+                    <option value="Crosses above">Crosses above</option>
+                    <option value="Crosses below">Crosses below</option>
+                </select>
+            </div>
+            <div class="modal-form-group">
+                <label>Value</label>
+                <input type="number" id="modalValue" value="50">
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn secondary" onclick="closeAddConditionModal()">Cancel</button>
+                <button class="modal-btn primary" onclick="addCondition()">Add Condition</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initial conditions data
+        let conditions = [
+            { id: 1, timeframe: 'Monthly', indicator: 'Rsi', period: 14, operator: 'Greater than equal to', valueType: 'Number', value: 40, active: true },
+            { id: 2, timeframe: 'Monthly', indicator: 'Rsi', period: 14, operator: 'Less than equal to', valueType: 'Number', value: 50, active: true },
+            { id: 3, timeframe: 'Weekly', indicator: 'Rsi', period: 14, operator: 'Greater than equal to', valueType: 'Number', value: 60, active: true },
+            { id: 4, timeframe: 'Daily', indicator: 'Rsi', period: 14, operator: 'Greater than equal to', valueType: 'Number', value: 60, active: true }
+        ];
+
+        let nextId = 5;
+        let filterMode = 'append';
+
+        // Render conditions
+        function renderConditions() {
+            const container = document.getElementById('conditionsList');
+            container.innerHTML = conditions.map(cond => `
+                <div class="condition-item ${cond.timeframe.toLowerCase()}">
+                    <span class="timeframe ${cond.timeframe.toLowerCase()}">${cond.timeframe}</span>
+                    <span class="indicator">${cond.indicator}</span>
+                    <span class="indicator-params">(${cond.period})</span>
+                    <span class="operator">${cond.operator}</span>
+                    <span class="value-type">${cond.valueType}</span>
+                    <input type="number" class="value-input" value="${cond.value}" onchange="updateConditionValue(${cond.id}, this.value)">
+                    <div class="condition-actions">
+                        <button class="condition-action-btn" title="Settings">&#9881;</button>
+                        <button class="condition-action-btn" title="Copy">&#128203;</button>
+                        <button class="condition-action-btn" title="Duplicate">&#128203;</button>
+                        <button class="condition-action-btn ${cond.active ? 'active' : ''}" title="Toggle" onclick="toggleCondition(${cond.id})">&#128065;</button>
+                        <button class="condition-action-btn delete" title="Delete" onclick="deleteCondition(${cond.id})">&#10005;</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Update condition value
+        function updateConditionValue(id, value) {
+            const cond = conditions.find(c => c.id === id);
+            if (cond) {
+                cond.value = parseFloat(value);
+            }
+        }
+
+        // Toggle condition active state
+        function toggleCondition(id) {
+            const cond = conditions.find(c => c.id === id);
+            if (cond) {
+                cond.active = !cond.active;
+                renderConditions();
+            }
+        }
+
+        // Delete condition
+        function deleteCondition(id) {
+            conditions = conditions.filter(c => c.id !== id);
+            renderConditions();
+        }
+
+        // Toggle buttons
+        document.querySelectorAll('.toggle-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                filterMode = btn.dataset.mode;
+            });
+        });
+
+        // Apply quick tag
+        function applyQuickTag(tag) {
+            document.getElementById('magicInput').value = tag;
+        }
+
+        // Add new tag
+        function addNewTag() {
+            const tag = prompt('Enter new quick filter tag:');
+            if (tag) {
+                const tagsContainer = document.querySelector('.quick-tags');
+                const newTag = document.createElement('div');
+                newTag.className = 'quick-tag';
+                newTag.onclick = () => applyQuickTag(tag);
+                newTag.innerHTML = `${tag} <span class="refresh-icon">&#8635;</span>`;
+                tagsContainer.appendChild(newTag);
+            }
+        }
+
+        // Generate filters from magic input
+        function generateFilters() {
+            const input = document.getElementById('magicInput').value;
+            if (!input) {
+                alert('Please enter a filter description');
+                return;
+            }
+            // This would call an AI/NLP backend to parse the input
+            alert('Generating filters for: ' + input);
+        }
+
+        // Toggle conditions visibility
+        let conditionsVisible = true;
+        function toggleConditions() {
+            conditionsVisible = !conditionsVisible;
+            document.getElementById('conditionsList').style.display = conditionsVisible ? 'flex' : 'none';
+            document.querySelector('.hide-conditions-btn').innerHTML =
+                conditionsVisible ? '<span>&#128065;</span> Hide conditions' : '<span>&#128065;</span> Show conditions';
+        }
+
+        // Modal functions
+        function openAddConditionModal() {
+            document.getElementById('addConditionModal').classList.add('visible');
+        }
+
+        function closeAddConditionModal() {
+            document.getElementById('addConditionModal').classList.remove('visible');
+        }
+
+        function addCondition() {
+            const newCondition = {
+                id: nextId++,
+                timeframe: document.getElementById('modalTimeframe').value,
+                indicator: document.getElementById('modalIndicator').value,
+                period: parseInt(document.getElementById('modalPeriod').value),
+                operator: document.getElementById('modalOperator').value,
+                valueType: 'Number',
+                value: parseFloat(document.getElementById('modalValue').value),
+                active: true
+            };
+            conditions.push(newCondition);
+            renderConditions();
+            closeAddConditionModal();
+        }
+
+        // Action button functions
+        let isScanning = false;
+
+        async function runScan() {
+            if (isScanning) return;
+
+            const activeConditions = conditions.filter(c => c.active);
+            if (activeConditions.length === 0) {
+                alert('Please add at least one active condition');
+                return;
+            }
+
+            const runBtn = document.querySelector('.btn-run');
+            const originalText = runBtn.innerHTML;
+
+            try {
+                isScanning = true;
+                runBtn.innerHTML = '<span>&#8987;</span> Scanning...';
+                runBtn.disabled = true;
+
+                // Show results section with loading state
+                document.getElementById('resultsSection').classList.add('visible');
+                document.getElementById('resultsBody').innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px; color: #8b949e;">
+                            <div>Scanning 50 stocks... This may take 30-60 seconds.</div>
+                            <div style="margin-top: 10px; font-size: 0.85rem;">Fetching data from Yahoo Finance</div>
+                        </td>
+                    </tr>
+                `;
+                document.getElementById('resultsCount').textContent = 'Scanning...';
+
+                const segment = document.getElementById('segmentSelect').value;
+
+                const response = await fetch('/api/value-scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        conditions: activeConditions,
+                        segment: segment
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    renderResults(data.results);
+                    document.getElementById('resultsCount').textContent = `${data.results.length} stocks found`;
+                } else {
+                    document.getElementById('resultsBody').innerHTML = `
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 40px; color: #f85149;">
+                                ${data.message || 'Scan failed. Please try again.'}
+                            </td>
+                        </tr>
+                    `;
+                    document.getElementById('resultsCount').textContent = 'Error';
+                }
+            } catch (error) {
+                console.error('Scan error:', error);
+                document.getElementById('resultsBody').innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px; color: #f85149;">
+                            Network error. Please check your connection and try again.
+                        </td>
+                    </tr>
+                `;
+                document.getElementById('resultsCount').textContent = 'Error';
+            } finally {
+                isScanning = false;
+                runBtn.innerHTML = originalText;
+                runBtn.disabled = false;
+            }
+        }
+
+        function renderResults(results) {
+            const tbody = document.getElementById('resultsBody');
+
+            if (results.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px; color: #8b949e;">
+                            No stocks found matching your criteria. Try adjusting the filters.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = results.map(stock => `
+                <tr>
+                    <td><a class="stock-symbol" href="https://www.tradingview.com/chart/?symbol=NSE:${stock.symbol}" target="_blank" title="Open ${stock.symbol} on TradingView">${stock.symbol}</a></td>
+                    <td>${stock.ltp?.toLocaleString('en-IN', {minimumFractionDigits: 2}) || '--'}</td>
+                    <td class="${stock.change >= 0 ? 'positive' : 'negative'}">${stock.change >= 0 ? '+' : ''}${stock.change?.toFixed(2) || '0.00'}%</td>
+                    <td>${stock.volumeFormatted || stock.volume || '--'}</td>
+                    <td>${stock.monthlyRsi?.toFixed(1) || '--'}</td>
+                    <td>${stock.weeklyRsi?.toFixed(1) || '--'}</td>
+                    <td>${stock.dailyRsi?.toFixed(1) || '--'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function saveScan() {
+            const name = prompt('Enter a name for this scan:');
+            if (name) {
+                // Save to localStorage or backend
+                const savedScans = JSON.parse(localStorage.getItem('valueBuyScans') || '[]');
+                savedScans.push({
+                    name: name,
+                    conditions: conditions,
+                    timestamp: new Date().toISOString()
+                });
+                localStorage.setItem('valueBuyScans', JSON.stringify(savedScans));
+                alert('Scan saved successfully!');
+            }
+        }
+
+        function backtestResults() {
+            alert('Backtesting feature coming soon!');
+        }
+
+        function createAlert() {
+            alert('Alert creation feature coming soon!');
+        }
+
+        // Initial render
+        renderConditions();
+    </script>
+</body>
+</html>
