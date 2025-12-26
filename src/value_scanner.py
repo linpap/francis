@@ -13,13 +13,10 @@ import json
 import time
 import random
 
-# NSE India stocks list (top 30 stocks for faster scanning on free tier)
+# NSE India stocks list (top 15 stocks for Render free tier - 30sec timeout)
 NSE_STOCKS = [
     "RELIANCE", "TCS", "HDFCBANK", "INFY", "ICICIBANK", "HINDUNILVR", "SBIN",
-    "BHARTIARTL", "KOTAKBANK", "ITC", "LT", "AXISBANK", "ASIANPAINT", "MARUTI",
-    "BAJFINANCE", "TITAN", "SUNPHARMA", "WIPRO", "HCLTECH", "POWERGRID",
-    "NTPC", "TATASTEEL", "TECHM", "HINDALCO", "COALINDIA", "TATAMOTORS",
-    "CIPLA", "BRITANNIA", "GRASIM", "JSWSTEEL"
+    "BHARTIARTL", "KOTAKBANK", "ITC", "LT", "AXISBANK", "TATAMOTORS", "TITAN", "WIPRO"
 ]
 
 
@@ -51,7 +48,7 @@ def get_yahoo_chart_data(symbol, interval="1d", range_period="6mo"):
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
         }
 
-        response = requests.get(url, params=params, headers=headers, timeout=15)
+        response = requests.get(url, params=params, headers=headers, timeout=5)
         if response.status_code != 200:
             return None
 
@@ -89,8 +86,7 @@ def get_stock_data_yahoo(symbol, period="6mo"):
     warnings.filterwarnings('ignore')
 
     try:
-        # Add small random delay to avoid rate limiting (reduced for faster scanning)
-        time.sleep(random.uniform(0.05, 0.15))
+        # No delay - speed is critical for Render timeout
 
         # Get daily data
         daily_data = get_yahoo_chart_data(symbol, "1d", period)
